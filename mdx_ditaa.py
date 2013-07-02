@@ -46,6 +46,7 @@ class DitaaPreprocessor(markdown.preprocessors.Preprocessor):
         block = []
         in_block = None
         for line in lines:
+            line = line.rstrip('\r')
             if line in start_tags:
                 assert(block == [])
                 in_block = self.extract_format(line)
