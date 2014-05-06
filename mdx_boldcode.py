@@ -5,7 +5,8 @@ import markdown
 """Replace all '**text**' with '<b>text</b'. Because we are a postprocessor,
 we assume that the only occurences left in the text are inside code blocks.
 
-No multiline support, so you have to add the bold asterisks on every line.
+To avoid undesired behaviour, there is no multiline support. So you have
+to add the bold asterisks on every line you want to be formatted bold.
 """
 
 BOLDCODE_RE = r'(\*\*)(.*?)(\*\*)'
@@ -28,10 +29,7 @@ class BoldCodeExtension(markdown.Extension):
 class BoldCodeProcessor(markdown.postprocessors.Postprocessor):
     def run(self, text):
 
-        def replacement(match):
-            return "<b>%s</b>" % match.group(2)
-
-        new_text = re.sub(BOLDCODE_RE, replacement, text)
+        new_text = re.sub(BOLDCODE_RE, r'<b>\2</b>', text)
         return new_text
 
 
