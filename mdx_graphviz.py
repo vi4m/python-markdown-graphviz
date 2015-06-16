@@ -56,7 +56,7 @@ import markdown, re, markdown.preprocessors, subprocess
 class GraphvizExtension(markdown.Extension):
     def __init__(self, configs):
         self.config = {'FORMAT':'png', 'BINARY_PATH':"", 'WRITE_IMGS_DIR':"", "BASE_IMG_LINK_DIR":""}
-        for key, value in configs:
+        for key, value in configs.iteritems():
             self.config[key] = value
     
     def reset(self):
