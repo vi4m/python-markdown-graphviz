@@ -115,7 +115,7 @@ class GraphvizPreprocessor(markdown.preprocessors.Preprocessor):
         p.stdin.write("\n".join(lines))
         p.stdin.close()
         p.wait()
-        filepath = "%s%s.%s" % (self.graphviz.config['site_dir'] + '/' + self.graphviz.config["WRITE_IMGS_DIR"], n, self.graphviz.config["FORMAT"])
+        filepath = "%s%s.%s" % (self.graphviz.config['mkdocs_site_dir'] + '/' + self.graphviz.config["WRITE_IMGS_DIR"], n, self.graphviz.config["FORMAT"])
         fout = open(filepath, 'w')
         fout.write(p.stdout.read())
         fout.close()
