@@ -115,14 +115,14 @@ class GraphvizPreprocessor(markdown.preprocessors.Preprocessor):
         p.stdin.write("\n".join(lines))
         p.stdin.close()
         p.wait()
-        output_path = self.graphviz.config['mkdocs_site_dir'] + '/' + self.graphviz.config["WRITE_IMGS_DIR"]
-        filepath = "%s%s.%s" % output_path, n, self.graphviz.config["FORMAT"])
-        if not os.path.exists(output_path):
-          os.mkdir(output_path)
+        output_dir = os.path.join([self.graphviz.config['mkdocs_site_dir'],self.graphviz.config["WRITE_IMGS_DIR"])
+        filepath = "%s%s.%s" % (output_dir, n, self.graphviz.config["FORMAT"])
+        if not os.path.exists(output_dir):
+          os.mkdir(output_dir)
         fout = open(filepath, 'w')
         fout.write(p.stdout.read())
         fout.close()
-        output_path = "%s%s.%s" % (self.graphviz.config["BASE_IMG_LINK_DIR"], n, self.graphviz.config["FORMAT"])
+        output_path = filepath
         return "![Graphviz chart %s](%s)" % (n, output_path)
 
 def makeExtension(configs=None) :
