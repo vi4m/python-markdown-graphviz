@@ -52,6 +52,7 @@ their lines and should be immediately followed by a newline.
 
 """
 import markdown, re, markdown.preprocessors, subprocess
+import os
 
 class GraphvizExtension(markdown.Extension):
     def __init__(self, configs):
