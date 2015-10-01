@@ -53,6 +53,7 @@ their lines and should be immediately followed by a newline.
 """
 import markdown, re, markdown.preprocessors, subprocess
 import os
+import hashlib
 
 class GraphvizExtension(markdown.Extension):
     def __init__(self, configs):
@@ -74,7 +75,8 @@ class GraphvizPreprocessor(markdown.preprocessors.Preprocessor):
 
     def __init__ (self, graphviz):
         self.graphviz = graphviz
-        self.formatters = ["dot", "neato", "lefty", "dotty"]
+        self.formatters = ["seqdiag", "blockdiag", "actdiag", "nwdiag", "dot", "neato", "lefty", "dotty"]
+        self.blockdiag_formatters = self.formatters[0:4]
 
     def run(self, lines):
         start_tags = [ "<%s>" % x for x in self.formatters ]
@@ -97,6 +99,8 @@ class GraphvizPreprocessor(markdown.preprocessors.Preprocessor):
                 block.append(line)
             else:
                 new_lines.append(line)
+        #if block == []:
+        #    raise UserWarning("Empty dot block in file near %s"  % lines)
         assert(block == [])
         return new_lines
 
@@ -108,17 +112,22 @@ class GraphvizPreprocessor(markdown.preprocessors.Preprocessor):
     def graph(self, n, type, lines):
         "Generates a graph from lines and returns a string containing n image link to created graph."
         assert(type in self.formatters)        
-        cmd = "%s%s -T%s" % (self.graphviz.config["BINARY_PATH"],
+        if type in self.blockdiag_formatters:
+            cmd = "%s -o /dev/stdout -" % (type,)
+        else: 
+            cmd = "%s%s -T%s" % (self.graphviz.config["BINARY_PATH"],
                              type,
                              self.graphviz.config["FORMAT"])
         p = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True)
         #(child_stdin, child_stdout) = (p.stdin, p.stdout) 
-        p.stdin.write("\n".join(lines))
+        contents = "\n".join(lines)
+        p.stdin.write(contents)
+        digest = str(hashlib.sha256(contents).hexdigest())
         p.stdin.close()
         p.wait()
         output_dir = os.path.join(self.graphviz.config['mkdocs_site_dir'], self.graphviz.config["WRITE_IMGS_DIR"])
         print(output_dir)
-        filename = "%s.%s" % (n, self.graphviz.config["FORMAT"])
+        filename = "%s.%s" % (digest, self.graphviz.config["FORMAT"])
         filepath = os.path.join(output_dir, filename)
         print(filepath)
         if not os.path.exists(output_dir):
@@ -129,5 +138,5 @@ class GraphvizPreprocessor(markdown.preprocessors.Preprocessor):
         img_link = os.path.join(self.graphviz.config["BASE_IMG_LINK_DIR"], filename)
         return "![Graphviz chart %s](%s)" % (n, img_link)
 
-def makeExtension(configs=None) :
+def makeExtension(configs=None):
     return GraphvizExtension(configs=configs)
