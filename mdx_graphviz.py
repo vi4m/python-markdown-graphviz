@@ -58,7 +58,7 @@ import hashlib
 class GraphvizExtension(markdown.Extension):
     def __init__(self, configs):
         self.config = {'FORMAT':'png', 'BINARY_PATH':"", 'WRITE_IMGS_DIR':"", "BASE_IMG_LINK_DIR":""}
-        for key, value in configs.iteritems():
+        for key, value in configs.items():
             self.config[key] = value
     
     def reset(self):
