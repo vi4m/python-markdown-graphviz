@@ -54,13 +54,16 @@ their lines and should be immediately followed by a newline.
 import markdown, re, markdown.preprocessors, subprocess
 import os
 import hashlib
+import logging
+
+logger = logging.getLogger(__name__)
 
 class GraphvizExtension(markdown.Extension):
     def __init__(self, configs):
         self.config = {'FORMAT':'png', 'BINARY_PATH':"", 'WRITE_IMGS_DIR':"", "BASE_IMG_LINK_DIR":""}
         for key, value in configs.items():
             self.config[key] = value
-    
+
     def reset(self):
         pass
 
@@ -113,23 +116,23 @@ class GraphvizPreprocessor(markdown.preprocessors.Preprocessor):
         "Generates a graph from lines and returns a string containing n image link to created graph."
         assert(type in self.formatters)        
         if type in self.blockdiag_formatters:
-            cmd = "%s -o /dev/stdout -" % (type,)
+            cmd = "%s -T%s -o /dev/stdout -" % (type, self.graphviz.config.get("FORMAT", "png"))
         else: 
             cmd = "%s%s -T%s" % (self.graphviz.config["BINARY_PATH"],
                              type,
                              self.graphviz.config["FORMAT"])
+        logger.debug("Invoking: %s" % cmd)
         p = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True)
-        #(child_stdin, child_stdout) = (p.stdin, p.stdout) 
         contents = "\n".join(lines)
         p.stdin.write(contents.encode('utf-8'))
         digest = str(hashlib.sha256(contents.encode('utf-8')).hexdigest())
         p.stdin.close()
         p.wait()
         output_dir = os.path.join(self.graphviz.config['mkdocs_site_dir'], self.graphviz.config["WRITE_IMGS_DIR"])
-        print(output_dir)
+        logger.debug("Output dir: %s" % output_dir)
         filename = "%s.%s" % (digest, self.graphviz.config["FORMAT"])
         filepath = os.path.join(output_dir, filename)
-        print(filepath)
+        logger.debug("Output file: %s " % filepath)
         if not os.path.exists(output_dir):
           os.mkdir(output_dir)
         fout = open(filepath, 'wb')
